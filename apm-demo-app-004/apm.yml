@@ -1,0 +1,4 @@
+agents:
+  - name: build-helper
+    source: ./src/agents/build-helper.agent.md
+    version: "1.0.0"

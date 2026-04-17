@@ -1,0 +1,36 @@
+name: Teardown All Demo Apps
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  approve:
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - run: echo "Teardown approved"
+
+  teardown:
+    needs: approve
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rg: ['rg-apm-demo-001', 'rg-apm-demo-002', 'rg-apm-demo-003', 'rg-apm-demo-004', 'rg-apm-demo-005']
+    steps:
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Delete Resource Group
+        run: az group delete --name ${{ matrix.rg }} --yes --no-wait
+
+      - name: Summary
+        run: |
+          echo "### 🗑️ Deleted ${{ matrix.rg }}" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,33 @@
+# VIOLATION: Unpinned dependencies (no exact versions, no lockfile)
+# apm audit --ci will flag all of these
+
+agents:
+  - name: code-reviewer
+    source: npm:@example/code-reviewer-agent
+    # VIOLATION: No version pinned — uses latest
+  - name: test-generator
+    source: npm:@example/test-gen-agent@^2.0.0
+    # VIOLATION: Version range instead of exact pin
+  - name: deploy-helper
+    source: npm:@example/deploy-agent@>=1.0.0
+    # VIOLATION: Open version range
+  - name: deprecated-agent
+    source: npm:@example/old-deprecated-agent@1.0.0
+    # VIOLATION: Package is deprecated/withdrawn
+  - name: conflicting-agent
+    source: npm:@example/utils-agent@3.0.0
+    # VIOLATION: Conflicts with transitive dep requiring 2.x
+
+skills:
+  - name: analysis-skill
+    source: npm:@example/analysis-skill
+    # VIOLATION: No version pin
+  - name: reporting-skill
+    source: npm:@example/reporting-skill@~1.5.0
+    # VIOLATION: Tilde range instead of exact
+  - name: legacy-skill
+    source: npm:@example/legacy-skill@0.9.0
+    # VIOLATION: Pre-1.0 version without justification
+
+# VIOLATION: No integrity hashes anywhere
+# VIOLATION: No apm.lock.yaml committed

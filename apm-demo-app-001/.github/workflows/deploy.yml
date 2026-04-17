@@ -1,0 +1,69 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AZURE_RG: rg-apm-demo-001
+  APP_NAME: apm-demo-app-001
+  LOCATION: canadacentral
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Create Resource Group
+        run: az group create --name ${{ env.AZURE_RG }} --location ${{ env.LOCATION }}
+
+      - name: Deploy Infrastructure
+        id: infra
+        run: |
+          outputs=$(az deployment group create \
+            --resource-group ${{ env.AZURE_RG }} \
+            --template-file infra/main.bicep \
+            --parameters appName=${{ env.APP_NAME }} \
+            --query 'properties.outputs' -o json)
+          echo "acrName=$(echo $outputs | jq -r '.acrName.value')" >> $GITHUB_OUTPUT
+          echo "appServiceName=$(echo $outputs | jq -r '.appServiceName.value')" >> $GITHUB_OUTPUT
+
+      - name: Build and Push to ACR
+        run: |
+          az acr build \
+            --registry ${{ steps.infra.outputs.acrName }} \
+            --image ${{ env.APP_NAME }}:${{ github.sha }} \
+            --image ${{ env.APP_NAME }}:latest \
+            .
+
+      - name: Deploy to Web App for Containers
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ steps.infra.outputs.appServiceName }}
+          images: ${{ steps.infra.outputs.acrName }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
+
+      - name: Health Check
+        run: |
+          APP_URL=$(az webapp show -g ${{ env.AZURE_RG }} -n ${{ steps.infra.outputs.appServiceName }} --query defaultHostName -o tsv)
+          sleep 30
+          curl -sf --retry 5 --retry-delay 10 "https://$APP_URL" || exit 1
+
+      - name: Summary
+        run: |
+          APP_URL=$(az webapp show -g ${{ env.AZURE_RG }} -n ${{ steps.infra.outputs.appServiceName }} --query defaultHostName -o tsv)
+          echo "### ✅ ${{ env.APP_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "Deployed to: https://$APP_URL" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,32 @@
+trigger:
+  branches:
+    include:
+      - main
+
+variables:
+  - template: variables/common.yml
+
+stages:
+  - stage: Deploy
+    displayName: 'Deploy All Demo Apps'
+    jobs:
+      - template: templates/deploy-app.yml
+        parameters:
+          appName: apm-demo-app-001
+          resourceGroup: rg-apm-demo-001
+      - template: templates/deploy-app.yml
+        parameters:
+          appName: apm-demo-app-002
+          resourceGroup: rg-apm-demo-002
+      - template: templates/deploy-app.yml
+        parameters:
+          appName: apm-demo-app-003
+          resourceGroup: rg-apm-demo-003
+      - template: templates/deploy-app.yml
+        parameters:
+          appName: apm-demo-app-004
+          resourceGroup: rg-apm-demo-004
+      - template: templates/deploy-app.yml
+        parameters:
+          appName: apm-demo-app-005
+          resourceGroup: rg-apm-demo-005

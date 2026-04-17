@@ -1,0 +1,18 @@
+/// Engine dimension for the 4-engine scanning architecture.
+table Dim_Engine
+
+	column EngineKey
+		dataType: int64
+		summarizeBy: none
+
+	column EngineName
+		dataType: string
+		summarizeBy: none
+
+	column EngineDescription
+		dataType: string
+		summarizeBy: none
+
+	column ToolName
+		dataType: string
+		summarizeBy: none

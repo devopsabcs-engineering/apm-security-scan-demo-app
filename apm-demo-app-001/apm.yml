@@ -1,0 +1,4 @@
+agents:
+  - name: code-helper
+    source: ./src/agents/helper.agent.md
+    version: "1.0.0"

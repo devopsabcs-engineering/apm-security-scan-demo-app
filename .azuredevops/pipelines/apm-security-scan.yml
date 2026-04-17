@@ -1,0 +1,68 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - 'apm.yml'
+      - 'agents/**'
+      - 'instructions/**'
+      - 'prompts/**'
+      - 'skills/**'
+      - 'mcp.json'
+
+variables:
+  - template: variables/common.yml
+
+stages:
+  - stage: APMAudit
+    displayName: 'Engine 1+2: Unicode & Lockfile'
+    jobs:
+      - job: ApmAudit
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+          - script: |
+              pip install apm-cli
+              apm audit -f sarif -o $(Build.ArtifactStagingDirectory)/apm-audit.sarif
+            displayName: 'Run APM Audit'
+          - task: AdvancedSecurity-Publish@1
+            inputs:
+              SarifPath: '$(Build.ArtifactStagingDirectory)/apm-audit.sarif'
+
+  - stage: SemanticScan
+    displayName: 'Engine 3: Semantic Patterns'
+    dependsOn: []
+    jobs:
+      - job: SemanticScan
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '3.12'
+          - script: python src/converters/semantic-to-sarif.py --output $(Build.ArtifactStagingDirectory)/semantic.sarif
+            displayName: 'Run Semantic Scanner'
+          - task: AdvancedSecurity-Publish@1
+            inputs:
+              SarifPath: '$(Build.ArtifactStagingDirectory)/semantic.sarif'
+
+  - stage: MCPValidation
+    displayName: 'Engine 4: MCP Configuration'
+    dependsOn: []
+    jobs:
+      - job: MCPValidation
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '3.12'
+          - script: python src/converters/mcp-to-sarif.py --output $(Build.ArtifactStagingDirectory)/mcp.sarif
+            displayName: 'Run MCP Validator'
+          - task: AdvancedSecurity-Publish@1
+            inputs:
+              SarifPath: '$(Build.ArtifactStagingDirectory)/mcp.sarif'

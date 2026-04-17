@@ -1,0 +1,4 @@
+agents:
+  - name: dotnet-helper
+    source: .github/copilot-instructions.md
+    version: "1.0.0"

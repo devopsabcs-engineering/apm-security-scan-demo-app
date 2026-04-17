@@ -1,0 +1,115 @@
+name: APM Security Scan
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  security-events: write
+  contents: read
+
+jobs:
+  apm-audit:
+    name: "Engine 1+2: Unicode & Lockfile (${{ matrix.app }})"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: ['001', '002', '003', '004', '005']
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: devopsabcs-engineering/apm-demo-app-${{ matrix.app }}
+
+      - uses: microsoft/apm-action@v1
+        id: apm
+        continue-on-error: true
+        with:
+          audit-report: true
+
+      - name: Upload Unicode SARIF to target repo
+        if: always() && steps.apm.outputs.audit-report-path
+        env:
+          GH_TOKEN: ${{ secrets.ORG_ADMIN_TOKEN }}
+        run: |
+          gzip -c "${{ steps.apm.outputs.audit-report-path }}" | base64 -w0 > /tmp/sarif_encoded.txt
+          COMMIT_SHA=$(gh api repos/devopsabcs-engineering/apm-demo-app-${{ matrix.app }}/commits/main --jq '.sha')
+          jq -n --arg sha "$COMMIT_SHA" --arg ref "refs/heads/main" --rawfile sarif /tmp/sarif_encoded.txt \
+            '{commit_sha: $sha, ref: $ref, sarif: $sarif}' | \
+          gh api --method POST \
+            repos/devopsabcs-engineering/apm-demo-app-${{ matrix.app }}/code-scanning/sarifs \
+            --input -
+          echo "Uploaded APM audit SARIF to apm-demo-app-${{ matrix.app }}"
+
+  semantic-scan:
+    name: "Engine 3: Semantic Patterns (${{ matrix.app }})"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: ['001', '002', '003', '004', '005']
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: devopsabcs-engineering/apm-demo-app-${{ matrix.app }}
+          path: target-app
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run semantic pattern scanner
+        run: python src/converters/semantic-to-sarif.py --scan-dir target-app --output results.sarif
+
+      - name: Upload Semantic SARIF to target repo
+        if: always() && hashFiles('results.sarif') != ''
+        env:
+          GH_TOKEN: ${{ secrets.ORG_ADMIN_TOKEN }}
+        run: |
+          gzip -c results.sarif | base64 -w0 > /tmp/sarif_encoded.txt
+          COMMIT_SHA=$(gh api repos/devopsabcs-engineering/apm-demo-app-${{ matrix.app }}/commits/main --jq '.sha')
+          jq -n --arg sha "$COMMIT_SHA" --arg ref "refs/heads/main" --rawfile sarif /tmp/sarif_encoded.txt \
+            '{commit_sha: $sha, ref: $ref, sarif: $sarif}' | \
+          gh api --method POST \
+            repos/devopsabcs-engineering/apm-demo-app-${{ matrix.app }}/code-scanning/sarifs \
+            --input -
+          echo "Uploaded semantic SARIF to apm-demo-app-${{ matrix.app }}"
+
+  mcp-validation:
+    name: "Engine 4: MCP Configuration (${{ matrix.app }})"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: ['001', '002', '003', '004', '005']
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: devopsabcs-engineering/apm-demo-app-${{ matrix.app }}
+          path: target-app
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Validate MCP configuration
+        run: python src/converters/mcp-to-sarif.py --scan-dir target-app --output mcp-results.sarif
+
+      - name: Upload MCP SARIF to target repo
+        if: always() && hashFiles('mcp-results.sarif') != ''
+        env:
+          GH_TOKEN: ${{ secrets.ORG_ADMIN_TOKEN }}
+        run: |
+          gzip -c mcp-results.sarif | base64 -w0 > /tmp/sarif_encoded.txt
+          COMMIT_SHA=$(gh api repos/devopsabcs-engineering/apm-demo-app-${{ matrix.app }}/commits/main --jq '.sha')
+          jq -n --arg sha "$COMMIT_SHA" --arg ref "refs/heads/main" --rawfile sarif /tmp/sarif_encoded.txt \
+            '{commit_sha: $sha, ref: $ref, sarif: $sarif}' | \
+          gh api --method POST \
+            repos/devopsabcs-engineering/apm-demo-app-${{ matrix.app }}/code-scanning/sarifs \
+            --input -
+          echo "Uploaded MCP SARIF to apm-demo-app-${{ matrix.app }}"

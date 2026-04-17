@@ -1,0 +1,49 @@
+# APM Policy Configuration
+# Organizational policy for agent package management
+# Reference: https://microsoft.github.io/apm/enterprise/security/
+
+policy:
+  name: agentic-accelerator-policy
+  version: "1.0"
+
+sources:
+  allowlist:
+    - name: "npm"
+      url: "https://registry.npmjs.org"
+    - name: "github"
+      url: "https://github.com"
+
+  blocklist: []
+
+versions:
+  requirePinned: true
+  allowPrerelease: false
+  maxDepth: 5
+
+licenses:
+  allowed:
+    - MIT
+    - Apache-2.0
+    - BSD-2-Clause
+    - BSD-3-Clause
+    - ISC
+  blocked:
+    - GPL-2.0
+    - GPL-3.0
+    - AGPL-3.0
+
+publishers:
+  requireVerified: true
+  trusted:
+    - github
+    - microsoft
+    - openai
+    - anthropic
+
+integrity:
+  requireHashes: true
+  algorithm: sha256
+
+deprecated:
+  blockDeprecated: true
+  blockWithdrawn: true

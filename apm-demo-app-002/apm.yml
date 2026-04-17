@@ -1,0 +1,4 @@
+agents:
+  - name: data-processor
+    source: ./src/agents/AGENTS.md
+    version: "1.0.0"

@@ -1,0 +1,18 @@
+/// Severity dimension for filtering findings by severity level.
+table Dim_Severity
+
+	column SeverityKey
+		dataType: int64
+		summarizeBy: none
+
+	column Level
+		dataType: string
+		summarizeBy: none
+
+	column SarifLevel
+		dataType: string
+		summarizeBy: none
+
+	column SortOrder
+		dataType: int64
+		summarizeBy: none

@@ -1,0 +1,36 @@
+trigger: none
+
+pr:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - 'apm.yml'
+      - 'agents/**'
+      - 'instructions/**'
+      - 'prompts/**'
+      - 'skills/**'
+      - 'mcp.json'
+
+variables:
+  - template: variables/common.yml
+
+stages:
+  - stage: Gate
+    displayName: 'APM Security Gate'
+    jobs:
+      - job: SemanticGate
+        displayName: 'Semantic Pattern Gate'
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '3.12'
+          - script: python src/converters/semantic-to-sarif.py --output $(Build.ArtifactStagingDirectory)/semantic.sarif
+            displayName: 'Run Semantic Scanner'
+          - task: AdvancedSecurity-Publish@1
+            inputs:
+              SarifPath: '$(Build.ArtifactStagingDirectory)/semantic.sarif'

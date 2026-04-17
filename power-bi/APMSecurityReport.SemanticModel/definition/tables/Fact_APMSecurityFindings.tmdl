@@ -1,0 +1,44 @@
+/// Fact table for APM Security scan findings from SARIF files stored in ADLS Gen2.
+table Fact_APMSecurityFindings
+
+	column FindingId
+		dataType: string
+		summarizeBy: none
+
+	column DateKey
+		dataType: int64
+		summarizeBy: none
+
+	column RepositoryKey
+		dataType: int64
+		summarizeBy: none
+
+	column EngineKey
+		dataType: int64
+		summarizeBy: none
+
+	column SeverityKey
+		dataType: int64
+		summarizeBy: none
+
+	column RuleKey
+		dataType: int64
+		summarizeBy: none
+
+	column FilePath
+		dataType: string
+		summarizeBy: none
+
+	column LineNumber
+		dataType: int64
+		summarizeBy: none
+
+	column Message
+		dataType: string
+		summarizeBy: none
+
+	measure 'Total Findings' = COUNTROWS(Fact_APMSecurityFindings)
+		formatString: #,##0
+
+	measure 'Critical Findings' = CALCULATE(COUNTROWS(Fact_APMSecurityFindings), Dim_Severity[Level] = "CRITICAL")
+		formatString: #,##0

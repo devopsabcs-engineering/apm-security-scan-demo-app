@@ -1,0 +1,118 @@
+name: Deploy All Demo Apps
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  LOCATION: canadacentral
+
+jobs:
+  deploy-storage:
+    name: Deploy ADLS Gen2 Storage
+    runs-on: ubuntu-latest
+    environment: prod
+    outputs:
+      storageAccountName: ${{ steps.storage.outputs.storageAccountName }}
+      containerName: ${{ steps.storage.outputs.containerName }}
+      dfsEndpoint: ${{ steps.storage.outputs.dfsEndpoint }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Create Storage Resource Group
+        run: az group create --name rg-apm-scan-store --location ${{ env.LOCATION }}
+
+      - name: Deploy ADLS Gen2
+        id: storage
+        run: |
+          outputs=$(az deployment group create \
+            --resource-group rg-apm-scan-store \
+            --name "deploy-storage-${{ github.run_id }}" \
+            --template-file infra/storage.bicep \
+            --query 'properties.outputs' -o json)
+          echo "storageAccountName=$(echo $outputs | jq -r '.storageAccountName.value')" >> $GITHUB_OUTPUT
+          echo "containerName=$(echo $outputs | jq -r '.containerName.value')" >> $GITHUB_OUTPUT
+          echo "dfsEndpoint=$(echo $outputs | jq -r '.dfsEndpoint.value')" >> $GITHUB_OUTPUT
+
+      - name: Storage Summary
+        run: |
+          echo "### 🗄️ ADLS Gen2 Storage" >> $GITHUB_STEP_SUMMARY
+          echo "- **Account:** ${{ steps.storage.outputs.storageAccountName }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Container:** ${{ steps.storage.outputs.containerName }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **DFS Endpoint:** ${{ steps.storage.outputs.dfsEndpoint }}" >> $GITHUB_STEP_SUMMARY
+
+  deploy:
+    needs: deploy-storage
+    runs-on: ubuntu-latest
+    environment: prod
+    strategy:
+      matrix:
+        app:
+          - { name: 'apm-demo-app-001', rg: 'rg-apm-demo-001', dir: 'apm-demo-app-001' }
+          - { name: 'apm-demo-app-002', rg: 'rg-apm-demo-002', dir: 'apm-demo-app-002' }
+          - { name: 'apm-demo-app-003', rg: 'rg-apm-demo-003', dir: 'apm-demo-app-003' }
+          - { name: 'apm-demo-app-004', rg: 'rg-apm-demo-004', dir: 'apm-demo-app-004' }
+          - { name: 'apm-demo-app-005', rg: 'rg-apm-demo-005', dir: 'apm-demo-app-005' }
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Create Resource Group
+        run: az group create --name ${{ matrix.app.rg }} --location ${{ env.LOCATION }}
+
+      - name: Deploy Infrastructure
+        id: infra
+        working-directory: ${{ matrix.app.dir }}
+        run: |
+          outputs=$(az deployment group create \
+            --resource-group ${{ matrix.app.rg }} \
+            --name "deploy-${{ github.run_id }}" \
+            --template-file infra/main.bicep \
+            --parameters appName=${{ matrix.app.name }} \
+            --query 'properties.outputs' -o json)
+          echo "acrName=$(echo $outputs | jq -r '.acrName.value')" >> $GITHUB_OUTPUT
+          echo "appServiceName=$(echo $outputs | jq -r '.appServiceName.value')" >> $GITHUB_OUTPUT
+
+      - name: Build and Push to ACR
+        working-directory: ${{ matrix.app.dir }}
+        run: |
+          az acr build \
+            --registry ${{ steps.infra.outputs.acrName }} \
+            --image ${{ matrix.app.name }}:${{ github.sha }} \
+            --image ${{ matrix.app.name }}:latest \
+            .
+
+      - name: Deploy to Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ steps.infra.outputs.appServiceName }}
+          images: ${{ steps.infra.outputs.acrName }}.azurecr.io/${{ matrix.app.name }}:${{ github.sha }}
+
+      - name: Health Check
+        run: |
+          APP_URL=$(az webapp show -g ${{ matrix.app.rg }} -n ${{ steps.infra.outputs.appServiceName }} --query defaultHostName -o tsv)
+          sleep 60
+          curl -sf --retry 10 --retry-delay 15 --retry-all-errors "https://$APP_URL" || exit 1
+
+      - name: Summary
+        run: |
+          APP_URL=$(az webapp show -g ${{ matrix.app.rg }} -n ${{ steps.infra.outputs.appServiceName }} --query defaultHostName -o tsv)
+          echo "### ✅ ${{ matrix.app.name }}" >> $GITHUB_STEP_SUMMARY
+          echo "Deployed to: https://$APP_URL" >> $GITHUB_STEP_SUMMARY

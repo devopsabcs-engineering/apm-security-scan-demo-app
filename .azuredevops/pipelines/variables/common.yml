@@ -1,0 +1,4 @@
+variables:
+  location: canadacentral
+  serviceConnection: apm-security-scan-demo-app-ado-sc
+  storageResourceGroup: rg-apm-scan-store

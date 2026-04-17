@@ -1,0 +1,12 @@
+node_modules/
+__pycache__/
+*.pyc
+.env
+.env.local
+bin/
+obj/
+target/
+.next/
+dist/
+*.sarif
+!src/config/

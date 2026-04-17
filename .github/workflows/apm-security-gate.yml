@@ -1,0 +1,97 @@
+name: APM Security Gate
+
+on:
+  pull_request:
+    paths:
+      - 'apm.yml'
+      - 'apm.lock.yaml'
+      - 'agents/**'
+      - 'instructions/**'
+      - 'prompts/**'
+      - 'skills/**'
+      - '**/*.agent.md'
+      - '**/*.instructions.md'
+      - '**/*.prompt.md'
+      - '**/SKILL.md'
+      - '.github/copilot-instructions.md'
+      - 'mcp.json'
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  apm-audit:
+    name: "Unicode & Lockfile Gate"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: microsoft/apm-action@v1
+        id: apm
+        with:
+          audit-report: true
+
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always() && steps.apm.outputs.audit-report-path
+        with:
+          sarif_file: ${{ steps.apm.outputs.audit-report-path }}
+          category: apm-security/unicode
+
+  semantic-gate:
+    name: "Semantic Pattern Gate"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run semantic scanner
+        id: semantic
+        run: |
+          python src/converters/semantic-to-sarif.py --output results.sarif
+          CRITICAL=$(python -c "import json; d=json.load(open('results.sarif')); print(sum(1 for r in d.get('runs',[])[0].get('results',[]) if r.get('level')=='error'))" 2>/dev/null || echo 0)
+          echo "critical_count=$CRITICAL" >> $GITHUB_OUTPUT
+
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: results.sarif
+          category: apm-security/semantic
+
+      - name: Fail on critical findings
+        if: steps.semantic.outputs.critical_count > 0
+        run: |
+          echo "::error::${{ steps.semantic.outputs.critical_count }} critical semantic findings detected"
+          exit 1
+
+  mcp-gate:
+    name: "MCP Configuration Gate"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Validate MCP configuration
+        id: mcp
+        run: |
+          python src/converters/mcp-to-sarif.py --output mcp-results.sarif
+          CRITICAL=$(python -c "import json; d=json.load(open('mcp-results.sarif')); print(sum(1 for r in d.get('runs',[])[0].get('results',[]) if r.get('level')=='error'))" 2>/dev/null || echo 0)
+          echo "critical_count=$CRITICAL" >> $GITHUB_OUTPUT
+
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: mcp-results.sarif
+          category: apm-security/mcp
+
+      - name: Fail on critical findings
+        if: steps.mcp.outputs.critical_count > 0
+        run: |
+          echo "::error::${{ steps.mcp.outputs.critical_count }} critical MCP findings detected"
+          exit 1

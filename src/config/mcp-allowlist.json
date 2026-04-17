@@ -1,0 +1,25 @@
+{
+  "approvedServers": [
+    {
+      "name": "github-mcp-server",
+      "publisher": "github",
+      "transport": ["stdio"],
+      "maxTools": 30,
+      "approved": true
+    },
+    {
+      "name": "playwright-mcp-server",
+      "publisher": "microsoft",
+      "transport": ["stdio"],
+      "maxTools": 20,
+      "approved": true
+    },
+    {
+      "name": "azure-mcp-server",
+      "publisher": "microsoft",
+      "transport": ["stdio"],
+      "maxTools": 25,
+      "approved": true
+    }
+  ]
+}

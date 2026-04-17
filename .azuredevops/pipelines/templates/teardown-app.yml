@@ -1,0 +1,18 @@
+parameters:
+  - name: resourceGroup
+    type: string
+
+jobs:
+  - job: Teardown_${{ replace(parameters.resourceGroup, '-', '_') }}
+    displayName: 'Teardown ${{ parameters.resourceGroup }}'
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+      - task: AzureCLI@2
+        displayName: 'Delete Resource Group'
+        inputs:
+          azureSubscription: $(serviceConnection)
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+            az group delete --name ${{ parameters.resourceGroup }} --yes --no-wait

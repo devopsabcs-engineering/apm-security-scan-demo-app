@@ -1,0 +1,22 @@
+/// Rule dimension for APM-SEC and APM-MCP rule IDs.
+table Dim_Rule
+
+	column RuleKey
+		dataType: int64
+		summarizeBy: none
+
+	column RuleId
+		dataType: string
+		summarizeBy: none
+
+	column RuleName
+		dataType: string
+		summarizeBy: none
+
+	column CweId
+		dataType: string
+		summarizeBy: none
+
+	column OwaspCategory
+		dataType: string
+		summarizeBy: none

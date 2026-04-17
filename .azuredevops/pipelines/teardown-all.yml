@@ -1,0 +1,24 @@
+trigger: none
+
+variables:
+  - template: variables/common.yml
+
+stages:
+  - stage: Teardown
+    displayName: 'Teardown All Demo Apps'
+    jobs:
+      - template: templates/teardown-app.yml
+        parameters:
+          resourceGroup: rg-apm-demo-001
+      - template: templates/teardown-app.yml
+        parameters:
+          resourceGroup: rg-apm-demo-002
+      - template: templates/teardown-app.yml
+        parameters:
+          resourceGroup: rg-apm-demo-003
+      - template: templates/teardown-app.yml
+        parameters:
+          resourceGroup: rg-apm-demo-004
+      - template: templates/teardown-app.yml
+        parameters:
+          resourceGroup: rg-apm-demo-005

@@ -1,0 +1,26 @@
+/// Date dimension for time-based analysis of scan findings.
+table Dim_Date
+
+	column DateKey
+		dataType: int64
+		summarizeBy: none
+
+	column Date
+		dataType: dateTime
+		summarizeBy: none
+
+	column Year
+		dataType: int64
+		summarizeBy: none
+
+	column Month
+		dataType: int64
+		summarizeBy: none
+
+	column MonthName
+		dataType: string
+		summarizeBy: none
+
+	column Week
+		dataType: int64
+		summarizeBy: none
