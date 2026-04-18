@@ -1,0 +1,61 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.8.0/schema.json",
+  "name": "slicer_engine",
+  "visual": {
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Engine'"
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Property": "EngineName",
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Engine"
+                    }
+                  }
+                }
+              },
+              "queryRef": "Dim_Engine.EngineName",
+              "nativeQueryRef": "Engine",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualType": "slicer"
+  },
+  "position": {
+    "y": 350,
+    "width": 312,
+    "height": 74,
+    "tabOrder": 3002,
+    "x": 952,
+    "z": 3002
+  }
+}

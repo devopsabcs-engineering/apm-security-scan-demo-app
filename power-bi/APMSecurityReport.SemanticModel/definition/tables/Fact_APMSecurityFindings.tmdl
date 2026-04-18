@@ -1,44 +1,147 @@
 /// Fact table for APM Security scan findings from SARIF files stored in ADLS Gen2.
 table Fact_APMSecurityFindings
-
-	column FindingId
-		dataType: string
-		summarizeBy: none
-
-	column DateKey
-		dataType: int64
-		summarizeBy: none
-
-	column RepositoryKey
-		dataType: int64
-		summarizeBy: none
-
-	column EngineKey
-		dataType: int64
-		summarizeBy: none
-
-	column SeverityKey
-		dataType: int64
-		summarizeBy: none
-
-	column RuleKey
-		dataType: int64
-		summarizeBy: none
-
-	column FilePath
-		dataType: string
-		summarizeBy: none
-
-	column LineNumber
-		dataType: int64
-		summarizeBy: none
-
-	column Message
-		dataType: string
-		summarizeBy: none
+	lineageTag: 01c3b854-06a4-46cf-a8e0-e249d0e0b4e9
 
 	measure 'Total Findings' = COUNTROWS(Fact_APMSecurityFindings)
 		formatString: #,##0
+		lineageTag: 10a2f930-2dcb-41a3-b41d-6d8ea6b3aa02
 
-	measure 'Critical Findings' = CALCULATE(COUNTROWS(Fact_APMSecurityFindings), Dim_Severity[Level] = "CRITICAL")
+	measure 'Critical Findings' = CALCULATE(COUNTROWS(Fact_APMSecurityFindings), Fact_APMSecurityFindings[SeverityKey] = 1)
 		formatString: #,##0
+		lineageTag: 72fd37fe-e015-4429-8a57-57b394eedc1f
+
+	measure 'High Findings' = CALCULATE(COUNTROWS(Fact_APMSecurityFindings), Fact_APMSecurityFindings[SeverityKey] = 2)
+		formatString: #,##0
+		lineageTag: 6e6af958-ef0a-417b-9b53-ca7e188f043f
+
+	measure 'Medium Findings' = CALCULATE(COUNTROWS(Fact_APMSecurityFindings), Fact_APMSecurityFindings[SeverityKey] = 3)
+		formatString: #,##0
+		lineageTag: 18b0f7ec-4ea7-4ff2-b24d-677de14e7c84
+
+	measure 'Unique Rules Triggered' = DISTINCTCOUNT(Fact_APMSecurityFindings[RuleKey])
+		formatString: #,##0
+		lineageTag: ad79a786-276a-42a1-ab97-73cec693eeda
+
+	measure 'Files Affected' = DISTINCTCOUNT(Fact_APMSecurityFindings[FilePath])
+		formatString: #,##0
+		lineageTag: 267bc72d-7772-4d75-bc35-22b80b342bde
+
+	measure 'Repositories Scanned' = DISTINCTCOUNT(Fact_APMSecurityFindings[RepositoryKey])
+		formatString: #,##0
+		lineageTag: 57e33b29-1254-4f7c-b30e-f9087e3506c3
+
+	column FindingId
+		dataType: string
+		lineageTag: 4c947cd6-8114-42f5-a7f7-31548efee27e
+		summarizeBy: none
+		sourceColumn: FindingId
+
+		annotation SummarizationSetBy = Automatic
+
+	column DateKey
+		dataType: int64
+		formatString: 0
+		lineageTag: 937d9e7b-1e1d-460a-b73a-d6d0858dbad6
+		summarizeBy: none
+		sourceColumn: DateKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column RepositoryKey
+		dataType: int64
+		formatString: 0
+		lineageTag: 8a9fd6dc-65dc-49ad-a48c-373a021cf812
+		summarizeBy: none
+		sourceColumn: RepositoryKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column EngineKey
+		dataType: int64
+		formatString: 0
+		lineageTag: 9caf0985-c794-4310-8832-ff383cd11e85
+		summarizeBy: none
+		sourceColumn: EngineKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column SeverityKey
+		dataType: int64
+		formatString: 0
+		lineageTag: 940ef7b2-8f9e-4e11-9371-f8f9a6805267
+		summarizeBy: none
+		sourceColumn: SeverityKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column RuleKey
+		dataType: int64
+		formatString: 0
+		lineageTag: 351012dc-34f0-4023-9452-35891f309c09
+		summarizeBy: none
+		sourceColumn: RuleKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column FilePath
+		dataType: string
+		lineageTag: bf83f636-5afc-4bf5-b09d-3614e785548b
+		summarizeBy: none
+		sourceColumn: FilePath
+
+		annotation SummarizationSetBy = Automatic
+
+	column LineNumber
+		dataType: int64
+		formatString: 0
+		lineageTag: cd94e12c-7928-4cec-9917-2248c8d6029f
+		summarizeBy: sum
+		sourceColumn: LineNumber
+
+		annotation SummarizationSetBy = Automatic
+
+	column Message
+		dataType: string
+		lineageTag: 082a10c6-7fc6-4010-a622-af517db13d97
+		summarizeBy: none
+		sourceColumn: Message
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Fact_APMSecurityFindings = m
+		mode: import
+		source =
+				let
+					StorageUrl = "https://" & StorageAccountName & ".dfs.core.windows.net/" & ContainerName,
+					Source = AzureStorage.DataLake(StorageUrl),
+					#"Filtered to SARIF" = Table.SelectRows(Source, each Text.EndsWith([Name], ".sarif")),
+					#"Added FileContent" = Table.AddColumn(#"Filtered to SARIF", "FileContent", each Text.FromBinary([Content])),
+					#"Parsed JSON" = Table.AddColumn(#"Added FileContent", "Parsed", each try Json.Document([FileContent]) otherwise null),
+					#"Removed nulls" = Table.SelectRows(#"Parsed JSON", each [Parsed] <> null),
+					#"Expanded runs" = Table.ExpandListColumn(Table.AddColumn(#"Removed nulls", "Run", each [Parsed][runs]), "Run"),
+					#"Expanded run record" = Table.ExpandRecordColumn(#"Expanded runs", "Run", {"tool", "results"}, {"Tool", "Results"}),
+					#"Expanded tool" = Table.ExpandRecordColumn(#"Expanded run record", "Tool", {"driver"}, {"Driver"}),
+					#"Expanded driver" = Table.ExpandRecordColumn(#"Expanded tool", "Driver", {"name"}, {"ToolName"}),
+					#"Expanded results" = Table.ExpandListColumn(#"Expanded driver", "Results"),
+					#"Expanded result record" = Table.ExpandRecordColumn(#"Expanded results", "Results", {"ruleId", "level", "message", "locations"}, {"RuleId", "Level", "Message_Record", "Locations"}),
+					#"Expanded message" = Table.AddColumn(#"Expanded result record", "Message", each try [Message_Record][text] otherwise ""),
+					#"Expanded locations" = Table.AddColumn(#"Expanded message", "Location", each try [Locations]{0} otherwise null),
+					#"Expanded physical" = Table.AddColumn(#"Expanded locations", "PhysicalLocation", each try [Location][physicalLocation] otherwise null),
+					#"Extracted FilePath" = Table.AddColumn(#"Expanded physical", "FilePath", each try [PhysicalLocation][artifactLocation][uri] otherwise ""),
+					#"Extracted LineNumber" = Table.AddColumn(#"Extracted FilePath", "LineNumber", each try [PhysicalLocation][region][startLine] otherwise 0),
+					#"Extracted DateKey" = Table.AddColumn(#"Extracted LineNumber", "DateKey", each try Number.From(Text.Replace(Text.BeforeDelimiter([Folder Path], "/", 2), "/", "")) otherwise null),
+					#"Extracted RepoName" = Table.AddColumn(#"Extracted DateKey", "RepoName", each try Text.BeforeDelimiter([Name], "-", 3) otherwise [Name]),
+					#"Added RepositoryKey" = Table.AddColumn(#"Extracted RepoName", "RepositoryKey", each if [RepoName] = "apm-demo-app-001" then 1 else if [RepoName] = "apm-demo-app-002" then 2 else if [RepoName] = "apm-demo-app-003" then 3 else if [RepoName] = "apm-demo-app-004" then 4 else if [RepoName] = "apm-demo-app-005" then 5 else 0),
+					#"Added EngineKey" = Table.AddColumn(#"Added RepositoryKey", "EngineKey", each if [ToolName] = "apm-unicode-scanner" then 1 else if [ToolName] = "apm-lockfile-auditor" then 2 else if [ToolName] = "apm-semantic-scanner" then 3 else if [ToolName] = "apm-mcp-validator" then 4 else 0),
+					#"Added SeverityKey" = Table.AddColumn(#"Added EngineKey", "SeverityKey", each if [Level] = "error" then 1 else if [Level] = "warning" then 2 else if [Level] = "note" then 3 else 4),
+					#"Added RuleKey" = Table.AddColumn(#"Added SeverityKey", "RuleKey", each if [RuleId] = "APM-SEC-001" then 1 else if [RuleId] = "APM-SEC-002" then 2 else if [RuleId] = "APM-SEC-003" then 3 else if [RuleId] = "APM-SEC-004" then 4 else if [RuleId] = "APM-SEC-005" then 5 else if [RuleId] = "APM-SEC-006" then 6 else if [RuleId] = "APM-SEC-007" then 7 else if [RuleId] = "APM-SEC-008" then 8 else if [RuleId] = "APM-MCP-001" then 9 else if [RuleId] = "APM-MCP-002" then 10 else if [RuleId] = "APM-MCP-003" then 11 else if [RuleId] = "APM-UNI-001" then 12 else if [RuleId] = "APM-UNI-002" then 13 else if [RuleId] = "APM-UNI-003" then 14 else if [RuleId] = "APM-UNI-004" then 15 else if [RuleId] = "MCP-TRANSPORT" then 16 else if [RuleId] = "MCP-AUTH" then 17 else 0),
+					#"Added FindingId" = Table.AddColumn(#"Added RuleKey", "FindingId", each Text.Combine({[Name], [RuleId], Text.From([LineNumber]), [FilePath]}, "-")),
+					#"Selected Columns" = Table.SelectColumns(#"Added FindingId", {"FindingId", "DateKey", "RepositoryKey", "EngineKey", "SeverityKey", "RuleKey", "FilePath", "LineNumber", "Message"}),
+					#"Changed Types" = Table.TransformColumnTypes(#"Selected Columns", {{"FindingId", type text}, {"DateKey", Int64.Type}, {"RepositoryKey", Int64.Type}, {"EngineKey", Int64.Type}, {"SeverityKey", Int64.Type}, {"RuleKey", Int64.Type}, {"FilePath", type text}, {"LineNumber", Int64.Type}, {"Message", type text}})
+				in
+					#"Changed Types"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

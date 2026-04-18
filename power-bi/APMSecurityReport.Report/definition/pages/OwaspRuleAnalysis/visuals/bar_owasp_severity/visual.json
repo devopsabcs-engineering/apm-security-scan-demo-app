@@ -1,0 +1,99 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.8.0/schema.json",
+  "name": "bar_owasp_severity",
+  "visual": {
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Findings by OWASP LLM Top 10 Category'"
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualType": "barChart",
+    "query": {
+      "queryState": {
+        "Series": {
+          "projections": [
+            {
+              "active": true,
+              "queryRef": "Dim_Severity.Level",
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Severity"
+                    }
+                  },
+                  "Property": "Level"
+                }
+              },
+              "nativeQueryRef": "Severity"
+            }
+          ]
+        },
+        "Category": {
+          "projections": [
+            {
+              "active": true,
+              "queryRef": "Dim_Rule.OwaspCategory",
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Rule"
+                    }
+                  },
+                  "Property": "OwaspCategory"
+                }
+              },
+              "nativeQueryRef": "OWASP Category"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "active": true,
+              "queryRef": "Fact_APMSecurityFindings.Total Findings",
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Fact_APMSecurityFindings"
+                    }
+                  },
+                  "Property": "Total Findings"
+                }
+              },
+              "nativeQueryRef": "Count"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "position": {
+    "width": 620,
+    "z": 1000,
+    "tabOrder": 1000,
+    "y": 16,
+    "x": 16,
+    "height": 340
+  }
+}

@@ -10,3 +10,5 @@ target/
 dist/
 *.sarif
 !src/config/
+localSettings*
+cache.abf

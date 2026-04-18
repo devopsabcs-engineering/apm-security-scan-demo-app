@@ -1,0 +1,61 @@
+{
+  "name": "kpi_repo_files",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.8.0/schema.json",
+  "position": {
+    "y": 16,
+    "height": 100,
+    "z": 1004,
+    "x": 1036,
+    "tabOrder": 1004,
+    "width": 228
+  },
+  "visual": {
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Files Affected'"
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "queryRef": "Fact_APMSecurityFindings.Files Affected",
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Fact_APMSecurityFindings"
+                    }
+                  },
+                  "Property": "Files Affected"
+                }
+              },
+              "nativeQueryRef": "Files",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    "visualType": "card"
+  }
+}

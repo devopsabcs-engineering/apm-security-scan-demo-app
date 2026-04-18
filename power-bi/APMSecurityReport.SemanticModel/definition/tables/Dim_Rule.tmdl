@@ -1,22 +1,78 @@
 /// Rule dimension for APM-SEC and APM-MCP rule IDs.
 table Dim_Rule
+	lineageTag: d9a9a438-bbc3-4d67-90b1-61df2773f7ef
 
 	column RuleKey
 		dataType: int64
-		summarizeBy: none
+		formatString: 0
+		lineageTag: c7e72526-3eb8-4b93-87b1-00d42a1272b1
+		summarizeBy: count
+		sourceColumn: RuleKey
+
+		annotation SummarizationSetBy = Automatic
 
 	column RuleId
 		dataType: string
+		lineageTag: c2f8e955-3651-4246-a779-0646528f1dd3
 		summarizeBy: none
+		sourceColumn: RuleId
+
+		annotation SummarizationSetBy = Automatic
 
 	column RuleName
 		dataType: string
+		lineageTag: f21e7211-1481-4627-bf70-a103343ae4ae
 		summarizeBy: none
+		sourceColumn: RuleName
+
+		annotation SummarizationSetBy = Automatic
 
 	column CweId
 		dataType: string
+		lineageTag: 5870f946-8768-4214-81f9-61a8d77288a3
 		summarizeBy: none
+		sourceColumn: CweId
+
+		annotation SummarizationSetBy = Automatic
 
 	column OwaspCategory
 		dataType: string
+		lineageTag: 26312816-7bf8-4271-84b7-8af504065b28
 		summarizeBy: none
+		sourceColumn: OwaspCategory
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Dim_Rule = m
+		mode: import
+		source =
+				let
+					Source = Table.FromRows(
+						{
+							{1, "APM-SEC-001", "Base64 encoded payload", "CWE-506", "LLM01 Prompt Injection"},
+							{2, "APM-SEC-002", "Embedded external URL", "CWE-918", "LLM01 Prompt Injection"},
+							{3, "APM-SEC-003", "Shell command injection", "CWE-78", "LLM01 Prompt Injection"},
+							{4, "APM-SEC-004", "System prompt override", "CWE-74", "LLM01 Prompt Injection"},
+							{5, "APM-SEC-005", "Supply chain risk", "CWE-1357", "LLM03 Supply Chain"},
+							{6, "APM-SEC-006", "Secrets pattern", "CWE-798", "LLM07 System Prompt Leakage"},
+							{7, "APM-SEC-007", "MCP permission scope", "CWE-250", "LLM06 Excessive Agency"},
+							{8, "APM-SEC-008", "Lockfile integrity", "CWE-494", "LLM03 Supply Chain"},
+							{9, "APM-MCP-001", "MCP server not in allowlist", "CWE-829", "LLM06 Excessive Agency"},
+							{10, "APM-MCP-002", "MCP transport insecure", "CWE-319", "LLM06 Excessive Agency"},
+							{11, "APM-MCP-003", "MCP missing authentication", "CWE-306", "LLM06 Excessive Agency"},
+							{12, "APM-UNI-001", "Hidden tag characters", "CWE-116", "LLM01 Prompt Injection"},
+							{13, "APM-UNI-002", "Bidi override characters", "CWE-116", "LLM01 Prompt Injection"},
+							{14, "APM-UNI-003", "Zero-width characters", "CWE-116", "LLM01 Prompt Injection"},
+							{15, "APM-UNI-004", "Homoglyph substitution", "CWE-116", "LLM01 Prompt Injection"},
+							{16, "MCP-TRANSPORT", "Insecure MCP transport", "CWE-319", "LLM06 Excessive Agency"},
+							{17, "MCP-AUTH", "Missing MCP authentication", "CWE-306", "LLM06 Excessive Agency"}
+						},
+						type table [RuleKey = Int64.Type, RuleId = text, RuleName = text, CweId = text, OwaspCategory = text]
+					)
+				in
+					Source
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

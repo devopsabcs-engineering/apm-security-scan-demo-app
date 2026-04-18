@@ -1,0 +1,25 @@
+relationship 69b096cd-544f-4db8-972c-aff56899e3de
+	joinOnDateBehavior: datePartOnly
+	fromColumn: Dim_Date.Date
+	toColumn: LocalDateTable_3e56c42e-c00b-4492-aa2a-55e95a8128cf.Date
+
+relationship Fact_Engine_To_Dim_Engine
+	fromColumn: Fact_APMSecurityFindings.EngineKey
+	toColumn: Dim_Engine.EngineKey
+
+relationship Fact_Repository_To_Dim_Repository
+	fromColumn: Fact_APMSecurityFindings.RepositoryKey
+	toColumn: Dim_Repository.RepositoryKey
+
+relationship Fact_Severity_To_Dim_Severity
+	fromColumn: Fact_APMSecurityFindings.SeverityKey
+	toColumn: Dim_Severity.SeverityKey
+
+relationship Fact_Date_To_Dim_Date
+	fromColumn: Fact_APMSecurityFindings.DateKey
+	toColumn: Dim_Date.DateKey
+
+relationship Fact_Rule_To_Dim_Rule
+	fromColumn: Fact_APMSecurityFindings.RuleKey
+	toColumn: Dim_Rule.RuleKey
+

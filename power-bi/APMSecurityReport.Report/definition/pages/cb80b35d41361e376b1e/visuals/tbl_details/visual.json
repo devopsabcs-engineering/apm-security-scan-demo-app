@@ -1,0 +1,166 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.8.0/schema.json",
+  "name": "tbl_details",
+  "visual": {
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Finding Details'"
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Property": "RepositoryName",
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Repository"
+                    }
+                  }
+                }
+              },
+              "queryRef": "Dim_Repository.RepositoryName",
+              "nativeQueryRef": "Repository",
+              "active": true
+            },
+            {
+              "field": {
+                "Column": {
+                  "Property": "RuleId",
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Rule"
+                    }
+                  }
+                }
+              },
+              "queryRef": "Dim_Rule.RuleId",
+              "nativeQueryRef": "Rule ID",
+              "active": true
+            },
+            {
+              "field": {
+                "Column": {
+                  "Property": "RuleName",
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Rule"
+                    }
+                  }
+                }
+              },
+              "queryRef": "Dim_Rule.RuleName",
+              "nativeQueryRef": "Rule",
+              "active": true
+            },
+            {
+              "field": {
+                "Column": {
+                  "Property": "Level",
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Severity"
+                    }
+                  }
+                }
+              },
+              "queryRef": "Dim_Severity.Level",
+              "nativeQueryRef": "Severity",
+              "active": true
+            },
+            {
+              "field": {
+                "Column": {
+                  "Property": "EngineName",
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Engine"
+                    }
+                  }
+                }
+              },
+              "queryRef": "Dim_Engine.EngineName",
+              "nativeQueryRef": "Engine",
+              "active": true
+            },
+            {
+              "field": {
+                "Column": {
+                  "Property": "FilePath",
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Fact_APMSecurityFindings"
+                    }
+                  }
+                }
+              },
+              "queryRef": "Fact_APMSecurityFindings.FilePath",
+              "nativeQueryRef": "File",
+              "active": true
+            },
+            {
+              "field": {
+                "Column": {
+                  "Property": "LineNumber",
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Fact_APMSecurityFindings"
+                    }
+                  }
+                }
+              },
+              "queryRef": "Fact_APMSecurityFindings.LineNumber",
+              "nativeQueryRef": "Line",
+              "active": true
+            },
+            {
+              "field": {
+                "Column": {
+                  "Property": "Message",
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Fact_APMSecurityFindings"
+                    }
+                  }
+                }
+              },
+              "queryRef": "Fact_APMSecurityFindings.Message",
+              "nativeQueryRef": "Message",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualType": "tableEx"
+  },
+  "position": {
+    "y": 432,
+    "width": 1248,
+    "height": 272,
+    "tabOrder": 5000,
+    "x": 16,
+    "z": 5000
+  }
+}

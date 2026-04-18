@@ -1,0 +1,61 @@
+{
+  "visual": {
+    "visualType": "card",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "queryRef": "Fact_APMSecurityFindings.Files Affected",
+              "field": {
+                "Measure": {
+                  "Property": "Files Affected",
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Fact_APMSecurityFindings"
+                    }
+                  }
+                }
+              },
+              "nativeQueryRef": "Files Affected",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Files Affected'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.8.0/schema.json",
+  "position": {
+    "width": 196,
+    "x": 628,
+    "tabOrder": 1003,
+    "y": 16,
+    "z": 1003,
+    "height": 100
+  },
+  "name": "kpi_files_affected"
+}

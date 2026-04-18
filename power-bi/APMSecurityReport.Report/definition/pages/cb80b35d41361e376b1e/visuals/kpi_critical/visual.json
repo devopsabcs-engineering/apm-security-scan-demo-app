@@ -1,0 +1,61 @@
+{
+  "visual": {
+    "visualType": "card",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "queryRef": "Fact_APMSecurityFindings.Critical Findings",
+              "field": {
+                "Measure": {
+                  "Property": "Critical Findings",
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Fact_APMSecurityFindings"
+                    }
+                  }
+                }
+              },
+              "nativeQueryRef": "Critical",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Critical'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.8.0/schema.json",
+  "position": {
+    "width": 196,
+    "x": 220,
+    "tabOrder": 1001,
+    "y": 16,
+    "z": 1001,
+    "height": 100
+  },
+  "name": "kpi_critical"
+}

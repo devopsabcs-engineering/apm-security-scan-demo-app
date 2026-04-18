@@ -1,18 +1,57 @@
 /// Engine dimension for the 4-engine scanning architecture.
 table Dim_Engine
+	lineageTag: 92f56195-36d9-4888-bb7d-a5b18a7791a5
 
 	column EngineKey
 		dataType: int64
+		formatString: 0
+		lineageTag: 67191cbd-cfe5-46e0-aa4a-c9eb3bfc2f57
 		summarizeBy: none
+		sourceColumn: EngineKey
+
+		annotation SummarizationSetBy = Automatic
 
 	column EngineName
 		dataType: string
+		lineageTag: f60ebbd6-ba17-40e7-b54e-7323c7fdfe45
 		summarizeBy: none
+		sourceColumn: EngineName
+
+		annotation SummarizationSetBy = Automatic
 
 	column EngineDescription
 		dataType: string
+		lineageTag: 29135a48-2282-4b45-b085-43f880df20fd
 		summarizeBy: none
+		sourceColumn: EngineDescription
+
+		annotation SummarizationSetBy = Automatic
 
 	column ToolName
 		dataType: string
+		lineageTag: f5355cf0-4a39-4bf1-906c-b2899172d173
 		summarizeBy: none
+		sourceColumn: ToolName
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Dim_Engine = m
+		mode: import
+		source =
+				let
+					Source = Table.FromRows(
+						{
+							{1, "Unicode Scanner", "Detects hidden Unicode characters (tag chars, bidi overrides, zero-width)", "apm-unicode-scanner"},
+							{2, "Lockfile Auditor", "Validates apm.lock.yaml integrity, pinning, and known vulnerabilities", "apm-lockfile-auditor"},
+							{3, "Semantic Scanner", "Detects base64 payloads, URLs, shell injection, prompt overrides, secrets", "apm-semantic-scanner"},
+							{4, "MCP Validator", "Validates MCP server configs against allowlists and security policies", "apm-mcp-validator"}
+						},
+						type table [EngineKey = Int64.Type, EngineName = text, EngineDescription = text, ToolName = text]
+					)
+				in
+					Source
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

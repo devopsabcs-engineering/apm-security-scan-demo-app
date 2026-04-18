@@ -1,0 +1,61 @@
+{
+  "name": "card_repo_name",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.8.0/schema.json",
+  "position": {
+    "y": 16,
+    "height": 100,
+    "z": 1000,
+    "x": 16,
+    "tabOrder": 1000,
+    "width": 400
+  },
+  "visual": {
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Repository'"
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "queryRef": "Dim_Repository.RepositoryName",
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Repository"
+                    }
+                  },
+                  "Property": "RepositoryName"
+                }
+              },
+              "nativeQueryRef": "Repository",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    "visualType": "card"
+  }
+}

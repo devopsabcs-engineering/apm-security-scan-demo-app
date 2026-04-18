@@ -1,0 +1,174 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.8.0/schema.json",
+  "name": "matrix_rule_repo",
+  "position": {
+    "x": 15.678468899521532,
+    "y": 364.22289289657709,
+    "z": 2000,
+    "height": 340.10217151269785,
+    "width": 815.28038277511962,
+    "tabOrder": 2000
+  },
+  "visual": {
+    "visualType": "pivotTable",
+    "query": {
+      "queryState": {
+        "Columns": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Repository"
+                    }
+                  },
+                  "Property": "RepositoryName"
+                }
+              },
+              "queryRef": "Dim_Repository.RepositoryName",
+              "nativeQueryRef": "Repository",
+              "active": true
+            }
+          ]
+        },
+        "Rows": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Rule"
+                    }
+                  },
+                  "Property": "RuleId"
+                }
+              },
+              "queryRef": "Dim_Rule.RuleId",
+              "nativeQueryRef": "Rule ID",
+              "active": true
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Rule"
+                    }
+                  },
+                  "Property": "RuleName"
+                }
+              },
+              "queryRef": "Dim_Rule.RuleName",
+              "nativeQueryRef": "Rule Name",
+              "active": true
+            }
+          ]
+        },
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Fact_APMSecurityFindings"
+                    }
+                  },
+                  "Property": "Total Findings"
+                }
+              },
+              "queryRef": "Fact_APMSecurityFindings.Total Findings",
+              "nativeQueryRef": "Count",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Rule x Repository Matrix'"
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "a731c4dd2ab5014209ea",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Fact_APMSecurityFindings"
+              }
+            },
+            "Property": "Total Findings"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "26c47a1b5d73ea07013b",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Dim_Repository"
+              }
+            },
+            "Property": "RepositoryName"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "ff8b7c79083735e38aa9",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Dim_Rule"
+              }
+            },
+            "Property": "RuleId"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "0c41e7497928850ad1b8",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Dim_Rule"
+              }
+            },
+            "Property": "RuleName"
+          }
+        },
+        "type": "Categorical"
+      }
+    ]
+  }
+}

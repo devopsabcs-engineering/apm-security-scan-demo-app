@@ -1,0 +1,99 @@
+{
+  "name": "bar_repo_rules",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.8.0/schema.json",
+  "position": {
+    "y": 124,
+    "height": 280,
+    "z": 2001,
+    "x": 424,
+    "tabOrder": 2001,
+    "width": 424
+  },
+  "visual": {
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Findings by Rule'"
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "query": {
+      "queryState": {
+        "Y": {
+          "projections": [
+            {
+              "queryRef": "Fact_APMSecurityFindings.Total Findings",
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Fact_APMSecurityFindings"
+                    }
+                  },
+                  "Property": "Total Findings"
+                }
+              },
+              "nativeQueryRef": "Count",
+              "active": true
+            }
+          ]
+        },
+        "Series": {
+          "projections": [
+            {
+              "queryRef": "Dim_Severity.Level",
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Severity"
+                    }
+                  },
+                  "Property": "Level"
+                }
+              },
+              "nativeQueryRef": "Severity",
+              "active": true
+            }
+          ]
+        },
+        "Category": {
+          "projections": [
+            {
+              "queryRef": "Dim_Rule.RuleId",
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Rule"
+                    }
+                  },
+                  "Property": "RuleId"
+                }
+              },
+              "nativeQueryRef": "Rule",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    "visualType": "barChart"
+  }
+}

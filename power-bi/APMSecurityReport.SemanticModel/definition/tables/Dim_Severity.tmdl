@@ -1,18 +1,58 @@
 /// Severity dimension for filtering findings by severity level.
 table Dim_Severity
+	lineageTag: 98d2344b-ac8b-4d4d-80f6-f59c6f32cbf7
 
 	column SeverityKey
 		dataType: int64
+		formatString: 0
+		lineageTag: 03075d1b-c6d3-4444-aab9-bddcb588dc23
 		summarizeBy: none
+		sourceColumn: SeverityKey
+
+		annotation SummarizationSetBy = Automatic
 
 	column Level
 		dataType: string
+		lineageTag: f6dc929f-a271-486a-911e-7301e0283118
 		summarizeBy: none
+		sourceColumn: Level
+
+		annotation SummarizationSetBy = Automatic
 
 	column SarifLevel
 		dataType: string
+		lineageTag: 07f20f07-932c-469f-9894-eacbdde969b4
 		summarizeBy: none
+		sourceColumn: SarifLevel
+
+		annotation SummarizationSetBy = Automatic
 
 	column SortOrder
 		dataType: int64
+		formatString: 0
+		lineageTag: 59c0157e-82b0-418a-8cb8-403748086fe5
 		summarizeBy: none
+		sourceColumn: SortOrder
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Dim_Severity = m
+		mode: import
+		source =
+				let
+					Source = Table.FromRows(
+						{
+							{1, "CRITICAL", "error", 1},
+							{2, "HIGH", "warning", 2},
+							{3, "MEDIUM", "note", 3},
+							{4, "LOW", "none", 4}
+						},
+						type table [SeverityKey = Int64.Type, Level = text, SarifLevel = text, SortOrder = Int64.Type]
+					)
+				in
+					Source
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

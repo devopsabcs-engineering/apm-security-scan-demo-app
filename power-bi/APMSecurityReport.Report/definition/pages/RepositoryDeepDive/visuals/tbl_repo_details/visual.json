@@ -1,0 +1,181 @@
+{
+  "name": "tbl_repo_details",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.8.0/schema.json",
+  "position": {
+    "y": 432,
+    "height": 272,
+    "z": 5000,
+    "x": 16,
+    "tabOrder": 5000,
+    "width": 1248
+  },
+  "visual": {
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'All Findings for Repository'"
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "queryRef": "Dim_Rule.RuleId",
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Rule"
+                    }
+                  },
+                  "Property": "RuleId"
+                }
+              },
+              "nativeQueryRef": "Rule ID",
+              "active": true
+            },
+            {
+              "queryRef": "Dim_Rule.RuleName",
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Rule"
+                    }
+                  },
+                  "Property": "RuleName"
+                }
+              },
+              "nativeQueryRef": "Rule",
+              "active": true
+            },
+            {
+              "queryRef": "Dim_Severity.Level",
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Severity"
+                    }
+                  },
+                  "Property": "Level"
+                }
+              },
+              "nativeQueryRef": "Severity",
+              "active": true
+            },
+            {
+              "queryRef": "Dim_Engine.EngineName",
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Engine"
+                    }
+                  },
+                  "Property": "EngineName"
+                }
+              },
+              "nativeQueryRef": "Engine",
+              "active": true
+            },
+            {
+              "queryRef": "Dim_Rule.OwaspCategory",
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Rule"
+                    }
+                  },
+                  "Property": "OwaspCategory"
+                }
+              },
+              "nativeQueryRef": "OWASP",
+              "active": true
+            },
+            {
+              "queryRef": "Dim_Rule.CweId",
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Rule"
+                    }
+                  },
+                  "Property": "CweId"
+                }
+              },
+              "nativeQueryRef": "CWE",
+              "active": true
+            },
+            {
+              "queryRef": "Fact_APMSecurityFindings.FilePath",
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Fact_APMSecurityFindings"
+                    }
+                  },
+                  "Property": "FilePath"
+                }
+              },
+              "nativeQueryRef": "File",
+              "active": true
+            },
+            {
+              "queryRef": "Fact_APMSecurityFindings.LineNumber",
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Fact_APMSecurityFindings"
+                    }
+                  },
+                  "Property": "LineNumber"
+                }
+              },
+              "nativeQueryRef": "Line",
+              "active": true
+            },
+            {
+              "queryRef": "Fact_APMSecurityFindings.Message",
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Fact_APMSecurityFindings"
+                    }
+                  },
+                  "Property": "Message"
+                }
+              },
+              "nativeQueryRef": "Message",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    "visualType": "tableEx"
+  }
+}

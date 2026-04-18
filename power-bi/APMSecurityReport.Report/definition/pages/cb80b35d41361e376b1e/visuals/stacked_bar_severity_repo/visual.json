@@ -1,0 +1,99 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.8.0/schema.json",
+  "name": "stacked_bar_severity_repo",
+  "visual": {
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Findings by Severity per Repository'"
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "query": {
+      "queryState": {
+        "Series": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Property": "Level",
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Severity"
+                    }
+                  }
+                }
+              },
+              "queryRef": "Dim_Severity.Level",
+              "nativeQueryRef": "Severity",
+              "active": true
+            }
+          ]
+        },
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Property": "RepositoryName",
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Repository"
+                    }
+                  }
+                }
+              },
+              "queryRef": "Dim_Repository.RepositoryName",
+              "nativeQueryRef": "Repository",
+              "active": true
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Property": "Total Findings",
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Fact_APMSecurityFindings"
+                    }
+                  }
+                }
+              },
+              "queryRef": "Fact_APMSecurityFindings.Total Findings",
+              "nativeQueryRef": "Count",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualType": "barChart"
+  },
+  "position": {
+    "y": 124,
+    "width": 580,
+    "height": 280,
+    "tabOrder": 2000,
+    "x": 16,
+    "z": 2000
+  }
+}

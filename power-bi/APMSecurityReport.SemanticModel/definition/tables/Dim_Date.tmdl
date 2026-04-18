@@ -1,26 +1,87 @@
 /// Date dimension for time-based analysis of scan findings.
 table Dim_Date
-
-	column DateKey
-		dataType: int64
-		summarizeBy: none
+	lineageTag: 066c90bb-f32f-4df7-a32f-42a21e23e4e6
 
 	column Date
 		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 5bf27e8e-7c45-4d8c-b1ec-0dd9a8bd51ca
 		summarizeBy: none
+		sourceColumn: Date
+
+		variation Variation
+			isDefault
+			relationship: 69b096cd-544f-4db8-972c-aff56899e3de
+			defaultHierarchy: LocalDateTable_3e56c42e-c00b-4492-aa2a-55e95a8128cf.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column DateKey
+		dataType: int64
+		formatString: 0
+		lineageTag: 7f923478-89b1-42f7-a39a-44e1cb232eb2
+		summarizeBy: count
+		sourceColumn: DateKey
+
+		annotation SummarizationSetBy = Automatic
 
 	column Year
 		dataType: int64
-		summarizeBy: none
+		formatString: 0
+		lineageTag: 63e021e3-dee8-4fb1-949b-3a670a18427f
+		summarizeBy: sum
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = Automatic
 
 	column Month
 		dataType: int64
-		summarizeBy: none
+		formatString: 0
+		lineageTag: c404c460-0d07-4aa7-9346-3c009c65e3ac
+		summarizeBy: sum
+		sourceColumn: Month
+
+		annotation SummarizationSetBy = Automatic
 
 	column MonthName
 		dataType: string
+		lineageTag: 3e1ba4f5-e4ae-4d91-9f1e-5ad85905b509
 		summarizeBy: none
+		sourceColumn: MonthName
+
+		annotation SummarizationSetBy = Automatic
 
 	column Week
 		dataType: int64
-		summarizeBy: none
+		formatString: 0
+		lineageTag: 45ff57b6-979c-482b-891c-ab1312b14e24
+		summarizeBy: sum
+		sourceColumn: Week
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Dim_Date = m
+		mode: import
+		source =
+				let
+					Today = DateTime.LocalNow(),
+					StartDate = #date(2026, 1, 1),
+					EndDate = Date.From(Today),
+					DayCount = Duration.Days(EndDate - StartDate) + 1,
+					DateList = List.Dates(StartDate, DayCount, #duration(1, 0, 0, 0)),
+					#"Converted to Table" = Table.FromList(DateList, Splitter.SplitByNothing(), {"Date"}, null, ExtraValues.Error),
+					#"Changed Type" = Table.TransformColumnTypes(#"Converted to Table", {{"Date", type date}}),
+					#"Added DateKey" = Table.AddColumn(#"Changed Type", "DateKey", each Number.From(Date.ToText([Date], "yyyyMMdd")), Int64.Type),
+					#"Added Year" = Table.AddColumn(#"Added DateKey", "Year", each Date.Year([Date]), Int64.Type),
+					#"Added Month" = Table.AddColumn(#"Added Year", "Month", each Date.Month([Date]), Int64.Type),
+					#"Added MonthName" = Table.AddColumn(#"Added Month", "MonthName", each Date.MonthName([Date]), type text),
+					#"Added Week" = Table.AddColumn(#"Added MonthName", "Week", each Date.WeekOfYear([Date]), Int64.Type)
+				in
+					#"Added Week"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

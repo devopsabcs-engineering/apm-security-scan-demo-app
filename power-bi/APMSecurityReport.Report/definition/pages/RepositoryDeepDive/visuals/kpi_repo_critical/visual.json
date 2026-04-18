@@ -1,0 +1,61 @@
+{
+  "name": "kpi_repo_critical",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.8.0/schema.json",
+  "position": {
+    "y": 16,
+    "height": 100,
+    "z": 1002,
+    "x": 628,
+    "tabOrder": 1002,
+    "width": 196
+  },
+  "visual": {
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Critical'"
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "queryRef": "Fact_APMSecurityFindings.Critical Findings",
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Fact_APMSecurityFindings"
+                    }
+                  },
+                  "Property": "Critical Findings"
+                }
+              },
+              "nativeQueryRef": "Critical",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    "visualType": "card"
+  }
+}

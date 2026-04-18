@@ -1,0 +1,80 @@
+{
+  "name": "bar_repo_owasp",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.8.0/schema.json",
+  "position": {
+    "y": 124,
+    "height": 280,
+    "z": 2002,
+    "x": 856,
+    "tabOrder": 2002,
+    "width": 408
+  },
+  "visual": {
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'OWASP LLM Category'"
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "query": {
+      "queryState": {
+        "Y": {
+          "projections": [
+            {
+              "queryRef": "Fact_APMSecurityFindings.Total Findings",
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Fact_APMSecurityFindings"
+                    }
+                  },
+                  "Property": "Total Findings"
+                }
+              },
+              "nativeQueryRef": "Count",
+              "active": true
+            }
+          ]
+        },
+        "Category": {
+          "projections": [
+            {
+              "queryRef": "Dim_Rule.OwaspCategory",
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Rule"
+                    }
+                  },
+                  "Property": "OwaspCategory"
+                }
+              },
+              "nativeQueryRef": "OWASP",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    "visualType": "clusteredBarChart"
+  }
+}

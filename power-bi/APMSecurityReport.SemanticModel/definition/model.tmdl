@@ -1,0 +1,23 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation PBI_QueryOrder = ["StorageAccountName","ContainerName","Dim_Date","Dim_Engine","Dim_Repository","Dim_Rule","Dim_Severity","Fact_APMSecurityFindings"]
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table Dim_Date
+ref table Dim_Engine
+ref table Dim_Repository
+ref table Dim_Rule
+ref table Dim_Severity
+ref table Fact_APMSecurityFindings
+ref table DateTableTemplate_056a3559-3e6c-49e6-95a5-55c6445c09ba
+ref table LocalDateTable_3e56c42e-c00b-4492-aa2a-55e95a8128cf
+

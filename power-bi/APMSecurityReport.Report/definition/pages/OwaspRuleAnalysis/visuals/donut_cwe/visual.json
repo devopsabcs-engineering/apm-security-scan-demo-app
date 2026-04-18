@@ -1,0 +1,80 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.8.0/schema.json",
+  "name": "donut_cwe",
+  "visual": {
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Findings by CWE'"
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualType": "donutChart",
+    "query": {
+      "queryState": {
+        "Y": {
+          "projections": [
+            {
+              "active": true,
+              "queryRef": "Fact_APMSecurityFindings.Total Findings",
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Fact_APMSecurityFindings"
+                    }
+                  },
+                  "Property": "Total Findings"
+                }
+              },
+              "nativeQueryRef": "Count"
+            }
+          ]
+        },
+        "Category": {
+          "projections": [
+            {
+              "active": true,
+              "queryRef": "Dim_Rule.CweId",
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Rule"
+                    }
+                  },
+                  "Property": "CweId"
+                }
+              },
+              "nativeQueryRef": "CWE"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "position": {
+    "width": 420,
+    "z": 2001,
+    "tabOrder": 2001,
+    "y": 364,
+    "x": 844,
+    "height": 340
+  }
+}

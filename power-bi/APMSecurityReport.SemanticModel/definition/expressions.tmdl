@@ -1,0 +1,14 @@
+expression StorageAccountName = "stapmscanst4mvnymfd6ru" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 7a1b2c3d-4e5f-6789-0abc-def123456789
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Text
+
+expression ContainerName = "apm-security-results" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 8b2c3d4e-5f6a-7890-1bcd-ef1234567890
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Text
+

@@ -1,0 +1,80 @@
+{
+  "name": "donut_repo_engine",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.8.0/schema.json",
+  "position": {
+    "y": 124,
+    "height": 280,
+    "z": 2000,
+    "x": 16,
+    "tabOrder": 2000,
+    "width": 400
+  },
+  "visual": {
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Findings by Engine'"
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "query": {
+      "queryState": {
+        "Y": {
+          "projections": [
+            {
+              "queryRef": "Fact_APMSecurityFindings.Total Findings",
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Fact_APMSecurityFindings"
+                    }
+                  },
+                  "Property": "Total Findings"
+                }
+              },
+              "nativeQueryRef": "Count",
+              "active": true
+            }
+          ]
+        },
+        "Category": {
+          "projections": [
+            {
+              "queryRef": "Dim_Engine.EngineName",
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Engine"
+                    }
+                  },
+                  "Property": "EngineName"
+                }
+              },
+              "nativeQueryRef": "Engine",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    "visualType": "donutChart"
+  }
+}

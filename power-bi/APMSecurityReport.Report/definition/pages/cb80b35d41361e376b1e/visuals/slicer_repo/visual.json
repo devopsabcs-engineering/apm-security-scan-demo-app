@@ -1,0 +1,61 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.8.0/schema.json",
+  "name": "slicer_repo",
+  "visual": {
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Repository'"
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Property": "RepositoryName",
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Repository"
+                    }
+                  }
+                }
+              },
+              "queryRef": "Dim_Repository.RepositoryName",
+              "nativeQueryRef": "Repository",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualType": "slicer"
+  },
+  "position": {
+    "y": 124,
+    "width": 312,
+    "height": 130,
+    "tabOrder": 3000,
+    "x": 952,
+    "z": 3000
+  }
+}

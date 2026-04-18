@@ -1,0 +1,95 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.8.0/schema.json",
+  "name": "treemap_rule",
+  "visual": {
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Rule Distribution by OWASP Category'"
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualType": "treemap",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "active": true,
+              "queryRef": "Fact_APMSecurityFindings.Total Findings",
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Fact_APMSecurityFindings"
+                    }
+                  },
+                  "Property": "Total Findings"
+                }
+              },
+              "nativeQueryRef": "Count"
+            }
+          ]
+        },
+        "Group": {
+          "projections": [
+            {
+              "active": true,
+              "queryRef": "Dim_Rule.OwaspCategory",
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Rule"
+                    }
+                  },
+                  "Property": "OwaspCategory"
+                }
+              },
+              "nativeQueryRef": "OWASP Category"
+            },
+            {
+              "active": true,
+              "queryRef": "Dim_Rule.RuleId",
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Dim_Rule"
+                    }
+                  },
+                  "Property": "RuleId"
+                }
+              },
+              "nativeQueryRef": "Rule ID"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "position": {
+    "width": 620,
+    "z": 1001,
+    "tabOrder": 1001,
+    "y": 16,
+    "x": 644,
+    "height": 340
+  }
+}
