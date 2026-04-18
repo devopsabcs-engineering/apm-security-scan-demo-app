@@ -27,7 +27,9 @@ stages:
               pip install apm-cli
               apm audit -f sarif -o $(Build.ArtifactStagingDirectory)/apm-audit.sarif
             displayName: 'Run APM Audit'
+            continueOnError: true
           - task: AdvancedSecurity-Publish@1
+            condition: always()
             inputs:
               SarifPath: '$(Build.ArtifactStagingDirectory)/apm-audit.sarif'
 
@@ -45,7 +47,9 @@ stages:
               versionSpec: '3.12'
           - script: python src/converters/semantic-to-sarif.py --output $(Build.ArtifactStagingDirectory)/semantic.sarif
             displayName: 'Run Semantic Scanner'
+            continueOnError: true
           - task: AdvancedSecurity-Publish@1
+            condition: always()
             inputs:
               SarifPath: '$(Build.ArtifactStagingDirectory)/semantic.sarif'
 
@@ -63,6 +67,8 @@ stages:
               versionSpec: '3.12'
           - script: python src/converters/mcp-to-sarif.py --output $(Build.ArtifactStagingDirectory)/mcp.sarif
             displayName: 'Run MCP Validator'
+            continueOnError: true
           - task: AdvancedSecurity-Publish@1
+            condition: always()
             inputs:
               SarifPath: '$(Build.ArtifactStagingDirectory)/mcp.sarif'
