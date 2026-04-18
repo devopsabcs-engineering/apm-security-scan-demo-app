@@ -1,74 +1,249 @@
-trigger:
+# APM Security Scan Pipeline
+# Runs semantic pattern and MCP configuration scans across all 5 demo apps
+# Publishes SARIF results to each demo app repo's Advanced Security tab
+
+trigger: none
+pr: none
+
+schedules:
+- cron: '0 6 * * Mon'
+  displayName: 'Weekly Monday 06:00 UTC APM Scan'
   branches:
     include:
-      - main
-  paths:
-    include:
-      - 'apm.yml'
-      - 'agents/**'
-      - 'instructions/**'
-      - 'prompts/**'
-      - 'skills/**'
-      - 'mcp.json'
+    - main
+  always: true
+
+pool:
+  vmImage: 'ubuntu-latest'
 
 variables:
-  - template: variables/common.yml
+  - group: apm-security-variables
+  - name: location
+    value: canadacentral
+  - name: serviceConnection
+    value: apm-security-scan-demo-app-ado-sc
+  - name: storageResourceGroup
+    value: rg-apm-scan-store
 
-stages:
-  - stage: APMAudit
-    displayName: 'Engine 1+2: Unicode & Lockfile'
-    jobs:
-      - job: ApmAudit
-        pool:
-          vmImage: ubuntu-latest
-        steps:
-          - checkout: self
-          - script: |
-              pip install apm-cli
-              apm audit -f sarif -o $(Build.ArtifactStagingDirectory)/apm-audit.sarif
-            displayName: 'Run APM Audit'
-            continueOnError: true
-          - task: AdvancedSecurity-Publish@1
-            condition: always()
-            inputs:
-              SarifPath: '$(Build.ArtifactStagingDirectory)/apm-audit.sarif'
+jobs:
+- job: SemanticScan
+  displayName: 'Engine 3: Semantic Patterns'
+  continueOnError: true
+  strategy:
+    matrix:
+      App001: { appId: '001' }
+      App002: { appId: '002' }
+      App003: { appId: '003' }
+      App004: { appId: '004' }
+      App005: { appId: '005' }
+  steps:
+  - checkout: self
 
-  - stage: SemanticScan
-    displayName: 'Engine 3: Semantic Patterns'
-    dependsOn: []
-    jobs:
-      - job: SemanticScan
-        pool:
-          vmImage: ubuntu-latest
-        steps:
-          - checkout: self
-          - task: UsePythonVersion@0
-            inputs:
-              versionSpec: '3.12'
-          - script: python src/converters/semantic-to-sarif.py --output $(Build.ArtifactStagingDirectory)/semantic.sarif
-            displayName: 'Run Semantic Scanner'
-            continueOnError: true
-          - task: AdvancedSecurity-Publish@1
-            condition: always()
-            inputs:
-              SarifPath: '$(Build.ArtifactStagingDirectory)/semantic.sarif'
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.12'
 
-  - stage: MCPValidation
-    displayName: 'Engine 4: MCP Configuration'
-    dependsOn: []
-    jobs:
-      - job: MCPValidation
-        pool:
-          vmImage: ubuntu-latest
-        steps:
-          - checkout: self
-          - task: UsePythonVersion@0
-            inputs:
-              versionSpec: '3.12'
-          - script: python src/converters/mcp-to-sarif.py --output $(Build.ArtifactStagingDirectory)/mcp.sarif
-            displayName: 'Run MCP Validator'
-            continueOnError: true
-          - task: AdvancedSecurity-Publish@1
-            condition: always()
-            inputs:
-              SarifPath: '$(Build.ArtifactStagingDirectory)/mcp.sarif'
+  - script: |
+      mkdir -p reports
+      python src/converters/semantic-to-sarif.py --scan-dir apm-demo-app-$(appId) --output reports/semantic-$(appId).sarif
+    displayName: 'Run Semantic Scanner'
+    continueOnError: true
+
+  - publish: reports/semantic-$(appId).sarif
+    artifact: sarif-semantic-$(appId)
+    displayName: 'Publish Semantic SARIF artifact'
+    condition: always()
+
+- job: MCPValidation
+  displayName: 'Engine 4: MCP Configuration'
+  continueOnError: true
+  strategy:
+    matrix:
+      App001: { appId: '001' }
+      App002: { appId: '002' }
+      App003: { appId: '003' }
+      App004: { appId: '004' }
+      App005: { appId: '005' }
+  steps:
+  - checkout: self
+
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.12'
+
+  - script: |
+      mkdir -p reports
+      python src/converters/mcp-to-sarif.py --scan-dir apm-demo-app-$(appId) --output reports/mcp-$(appId).sarif
+    displayName: 'Run MCP Validator'
+    continueOnError: true
+
+  - publish: reports/mcp-$(appId).sarif
+    artifact: sarif-mcp-$(appId)
+    displayName: 'Publish MCP SARIF artifact'
+    condition: always()
+
+# ---------------------------------------------------------------------------
+# Cross-repo SARIF upload — push SARIF files to each demo app repo
+# Each demo app gets a sarif-results/ folder and a publish-sarif pipeline
+# that uses AdvancedSecurity-Publish@1 to surface findings in its Adv Sec tab
+# ---------------------------------------------------------------------------
+- job: CrossRepoSarifUpload
+  displayName: 'Push SARIF to Demo App Repos'
+  dependsOn:
+  - SemanticScan
+  - MCPValidation
+  condition: always()
+  strategy:
+    matrix:
+      App001: { appId: '001' }
+      App002: { appId: '002' }
+      App003: { appId: '003' }
+      App004: { appId: '004' }
+      App005: { appId: '005' }
+  steps:
+  - task: DownloadPipelineArtifact@2
+    displayName: 'Download Semantic SARIF'
+    continueOnError: true
+    inputs:
+      artifact: sarif-semantic-$(appId)
+      path: $(Pipeline.Workspace)/sarif
+
+  - task: DownloadPipelineArtifact@2
+    displayName: 'Download MCP SARIF'
+    continueOnError: true
+    inputs:
+      artifact: sarif-mcp-$(appId)
+      path: $(Pipeline.Workspace)/sarif
+
+  - script: |
+      cat > /tmp/push_sarif.py << 'PYEOF'
+      import os, json, base64, glob, urllib.request, urllib.error
+
+      app_id = os.environ['APP_ID']
+      app_repo = f'apm-demo-app-{app_id}'
+      sarif_dir = os.environ['SARIF_DIR']
+      build_id = os.environ['BUILD_ID']
+      token = os.environ.get('CROSS_REPO_PAT', '')
+      if not token:
+          print('ERROR: CROSS_REPO_PAT not set. Check variable group mapping.')
+          exit(1)
+      print(f'Token length: {len(token)}')
+      org_url = 'https://dev.azure.com/MngEnvMCAP675646'
+      project = 'APM%20Security'
+
+      sarif_files = glob.glob(os.path.join(sarif_dir, '*.sarif'))
+      if not sarif_files:
+          print(f'No SARIF files to upload for app {app_id}')
+          exit(0)
+
+      print(f'Found {len(sarif_files)} SARIF files')
+
+      def api_get(url):
+          b64_auth = base64.b64encode(f':{token}'.encode()).decode()
+          req = urllib.request.Request(url, headers={'Authorization': f'Basic {b64_auth}'})
+          try:
+              with urllib.request.urlopen(req) as resp:
+                  return json.loads(resp.read())
+          except urllib.error.HTTPError as e:
+              print(f'GET {url} failed: {e.code}')
+              print(e.read().decode()[:200])
+              raise
+
+      def api_post(url, data):
+          body = json.dumps(data).encode()
+          b64_auth = base64.b64encode(f':{token}'.encode()).decode()
+          req = urllib.request.Request(url, data=body, method='POST',
+              headers={'Authorization': f'Basic {b64_auth}', 'Content-Type': 'application/json'})
+          try:
+              with urllib.request.urlopen(req) as resp:
+                  return resp.status, json.loads(resp.read())
+          except urllib.error.HTTPError as e:
+              return e.code, json.loads(e.read())
+
+      repo_info = api_get(f'{org_url}/{project}/_apis/git/repositories/{app_repo}?api-version=7.1')
+      repo_id = repo_info['id']
+      print(f'Repo ID: {repo_id}')
+
+      ref_info = api_get(f'{org_url}/{project}/_apis/git/repositories/{repo_id}/refs?filter=heads/main&api-version=7.1')
+      old_obj_id = ref_info['value'][0]['objectId']
+      print(f'Current main HEAD: {old_obj_id}')
+
+      changes = []
+      for sf in sarif_files:
+          with open(sf, 'rb') as f:
+              content = base64.b64encode(f.read()).decode()
+          fname = os.path.basename(sf)
+          changes.append({
+              'changeType': 'add',
+              'item': {'path': f'/sarif-results/{fname}'},
+              'newContent': {'content': content, 'contentType': 'base64Encoded'}
+          })
+
+      pipeline_b64 = 'dHJpZ2dlcjoKICBwYXRoczoKICAgIGluY2x1ZGU6CiAgICAtIHNhcmlmLXJlc3VsdHMvKgoKcG9vbDoKICB2bUltYWdlOiAndWJ1bnR1LWxhdGVzdCcKCnN0ZXBzOgotIGNoZWNrb3V0OiBzZWxmCgotIHRhc2s6IEFkdmFuY2VkU2VjdXJpdHktUHVibGlzaEAxCiAgZGlzcGxheU5hbWU6ICdQdWJsaXNoIFNBUklGIHRvIEFkdmFuY2VkIFNlY3VyaXR5JwogIGlucHV0czoKICAgIFNhcmlmc0lucHV0RGlyZWN0b3J5OiAnJChCdWlsZC5Tb3VyY2VzRGlyZWN0b3J5KS9zYXJpZi1yZXN1bHRzJw=='
+      changes.append({
+          'changeType': 'add',
+          'item': {'path': '/.azuredevops/pipelines/publish-sarif.yml'},
+          'newContent': {'content': pipeline_b64, 'contentType': 'base64Encoded'}
+      })
+
+      push_url = f'{org_url}/{project}/_apis/git/repositories/{repo_id}/pushes?api-version=7.1'
+      push_body = {
+          'refUpdates': [{'name': 'refs/heads/main', 'oldObjectId': old_obj_id}],
+          'commits': [{'comment': f'Update APM scan results (build {build_id})', 'changes': changes}]
+      }
+
+      status, resp = api_post(push_url, push_body)
+      if status == 201:
+          print(f'SARIF pushed to {app_repo} successfully')
+      else:
+          print(f'Add failed ({status}), retrying with edit changeType...')
+          for c in changes:
+              c['changeType'] = 'edit'
+          ref_info = api_get(f'{org_url}/{project}/_apis/git/repositories/{repo_id}/refs?filter=heads/main&api-version=7.1')
+          push_body['refUpdates'][0]['oldObjectId'] = ref_info['value'][0]['objectId']
+          status2, resp2 = api_post(push_url, push_body)
+          if status2 == 201:
+              print(f'SARIF updated in {app_repo}')
+          else:
+              print(f'Push failed: {status2}')
+              print(json.dumps(resp2, indent=2)[:500])
+      PYEOF
+      python3 /tmp/push_sarif.py
+    displayName: 'Push SARIF to demo app repo via REST API'
+    continueOnError: true
+    env:
+      CROSS_REPO_PAT: $(CROSS_REPO_PAT)
+      APP_ID: $(appId)
+      SARIF_DIR: $(Pipeline.Workspace)/sarif
+      BUILD_ID: $(Build.BuildId)
+
+  - script: |
+      APP_REPO="apm-demo-app-$(appId)"
+
+      # Check if publish-sarif pipeline exists in ADO, create if not
+      PIPELINE_EXISTS=$(az pipelines show --name "publish-sarif-$(appId)" --project "APM Security" --org https://dev.azure.com/MngEnvMCAP675646 -o tsv --query id 2>/dev/null || echo "")
+      if [ -z "$PIPELINE_EXISTS" ]; then
+        echo "Creating publish-sarif pipeline for ${APP_REPO}..."
+        az pipelines create \
+          --name "publish-sarif-$(appId)" \
+          --yml-path ".azuredevops/pipelines/publish-sarif.yml" \
+          --repository "$APP_REPO" \
+          --repository-type tfsgit \
+          --branch main \
+          --skip-first-run \
+          --project "APM Security" \
+          --org https://dev.azure.com/MngEnvMCAP675646 \
+          -o none 2>&1 || echo "Could not create pipeline"
+      fi
+
+      # Trigger the publish-sarif pipeline
+      echo "Triggering publish-sarif pipeline for ${APP_REPO}..."
+      az pipelines run \
+        --name "publish-sarif-$(appId)" \
+        --project "APM Security" \
+        --org https://dev.azure.com/MngEnvMCAP675646 \
+        -o none 2>&1 || echo "Could not trigger pipeline (may need to be created first)"
+    displayName: 'Trigger SARIF publish in demo app repo'
+    continueOnError: true
+    env:
+      AZURE_DEVOPS_EXT_PAT: $(CROSS_REPO_PAT)
